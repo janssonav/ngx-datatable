@@ -114,13 +114,11 @@ export class DataTableBodyRowComponent {
       width: `${widths[group]}px`
     };
 
-    if (group === 'left') {
-      translateXY(styles, offsetX, 0);
+    if (group === 'center') {
+      translateXY(styles, offsetX * -1, 0);
     } else if (group === 'right') {
-      const bodyWidth = parseInt(this.innerWidth + '', 0);
-      const totalDiff = widths.total - bodyWidth;
-      const offsetDiff = totalDiff - offsetX;
-      const offset = (offsetDiff + this.scrollbarHelper.width) * -1;
+      const totalDiff = widths.total - this.innerWidth;
+      const offset = totalDiff * -1;
       translateXY(styles, offset, 0);
     }
 
