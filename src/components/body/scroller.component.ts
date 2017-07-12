@@ -16,10 +16,9 @@ import { MouseEvent } from '../../events';
          [style.height]="'100%'"
          [style.width]="'100%'"
          [style.background]="'transparent'"
-         [style.z-index]="900"
          (scroll)="onScrolled($event)"
          (window:resize)="resize()">
-      <div class="fake-scroll"
+      <div class="datatable-fake-scroll"
            [style.width]="scrollWidth"
            [style.height]="scrollHeight"
            [style.background]="'transparent'">
@@ -29,7 +28,6 @@ import { MouseEvent } from '../../events';
          [style.position]="'absolute'"
          [style.height]="scrollViewportHeight"
          [style.width]="scrollViewportWidth"
-         [style.z-index]="901"
          [style.overflow]="'hidden'"
          (wheel)="onWheel($event)">
       <div class="datatable-scroll"
@@ -81,6 +79,10 @@ export class ScrollerComponent implements OnInit, OnDestroy {
     }
   }
 
+  ngAfterViewInit(): void {
+    requestAnimationFrame(() => this.updateViewport());
+  }
+
   ngOnDestroy(): void {
     if(this.scrollbarV || this.scrollbarH) {
       this.onScrollListener();
@@ -122,9 +124,9 @@ export class ScrollerComponent implements OnInit, OnDestroy {
   }
 
   onWheel(event: WheelEvent) {
-    console.log(event);
-    const newEvent = new WheelEvent(event.type, { deltaX: event.deltaX, deltaY: event.deltaY, deltaZ: event.deltaZ });
-    this.frameElement.nativeElement.dispatchEvent(newEvent);
+    this.scrollYPos = Math.max(0, this.scrollYPos + event.deltaY);
+    this.scrollXPos = Math.max(0, this.scrollXPos + event.deltaX);
+    this.updateOffset();
     event.preventDefault();
     event.stopPropagation();
   }
