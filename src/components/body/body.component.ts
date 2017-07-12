@@ -218,7 +218,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
     // declare fn here so we can get access to the `this` property
     this.rowTrackingFn = function(index: number, row: any): any {
       const idx = this.rowIndexes.get(row);
-      
+
       if (this.trackByProp) {
         return `${idx}-${this.trackByProp}`;
       } else {
@@ -610,9 +610,9 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
 
   /**
    * Returns if the row was expanded
-   * 
-   * @param {*} row 
-   * @returns {boolean} 
+   *
+   * @param {*} row
+   * @returns {boolean}
    * @memberof DataTableBodyComponent
    */
   getRowExpanded(row: any): boolean {
@@ -622,9 +622,9 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
 
   /**
    * Gets the row index of the item
-   * 
-   * @param {*} row 
-   * @returns {number} 
+   *
+   * @param {*} row
+   * @returns {number}
    * @memberof DataTableBodyComponent
    */
   getRowIndex(row: any): number {
