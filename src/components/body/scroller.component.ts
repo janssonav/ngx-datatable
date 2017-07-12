@@ -1,6 +1,6 @@
 import {
   Component, Input, ElementRef, Output, EventEmitter, Renderer,
-  OnInit, OnDestroy, HostBinding
+  OnInit, OnDestroy, HostBinding, ViewChild
 } from '@angular/core';
 
 import { MouseEvent } from '../../events';
@@ -8,7 +8,37 @@ import { MouseEvent } from '../../events';
 @Component({
   selector: 'datatable-scroller',
   template: `
-    <ng-content></ng-content>
+    <div #frame class="datatable-scroll-frame"
+         [style.position]="'absolute'"
+         [style.float]="'left'"
+         [style.overflow-x]="scrollbarV ? 'auto' : 'hidden'"
+         [style.overflow-y]="'auto'"
+         [style.height]="'100%'"
+         [style.width]="'100%'"
+         [style.background]="'transparent'"
+         [style.z-index]="900"
+         (scroll)="onScrolled($event)"
+         (window:resize)="resize()">
+      <div class="fake-scroll"
+           [style.width]="scrollWidth"
+           [style.height]="scrollHeight"
+           [style.background]="'transparent'">
+      </div>
+    </div>
+    <div class="datatable-scroll-viewport"
+         [style.position]="'absolute'"
+         [style.height]="scrollViewportHeight"
+         [style.width]="scrollViewportWidth"
+         [style.z-index]="901"
+         [style.overflow]="'hidden'"
+         (wheel)="onWheel($event)">
+      <div class="datatable-scroll"
+        [style.height.px]="scrollHeight"
+        [style.width.px]="scrollWidth"
+        [style.margin-top]="top">
+        <ng-content></ng-content>
+      </div>
+    </div>
   `,
   host: {
     class: 'datatable-scroll'
@@ -19,16 +49,14 @@ export class ScrollerComponent implements OnInit, OnDestroy {
   @Input() scrollbarV: boolean = false;
   @Input() scrollbarH: boolean = false;
 
-  @HostBinding('style.height.px')
   @Input() scrollHeight: number;
-
-  @HostBinding('style.width.px')
   @Input() scrollWidth: number;
 
   @Output() scroll: EventEmitter<any> = new EventEmitter();
 
-  @HostBinding('style.margin-top')
   top: string;
+
+  @ViewChild('frame') frameElement: ElementRef;
 
   scrollYPos: number = 0;
   scrollXPos: number = 0;
@@ -37,6 +65,8 @@ export class ScrollerComponent implements OnInit, OnDestroy {
   element: any;
   parentElement: any;
   onScrollListener: any;
+  scrollViewportWidth: string;
+  scrollViewportHeight: string;
 
   constructor(element: ElementRef, private renderer: Renderer) {
     this.element = element.nativeElement;
@@ -91,4 +121,20 @@ export class ScrollerComponent implements OnInit, OnDestroy {
     this.top = `${-this.scrollYPos}px`;
   }
 
+  onWheel(event: WheelEvent) {
+    console.log(event);
+    const newEvent = new WheelEvent(event.type, { deltaX: event.deltaX, deltaY: event.deltaY, deltaZ: event.deltaZ });
+    this.frameElement.nativeElement.dispatchEvent(newEvent);
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  resize() {
+    this.updateViewport();
+  }
+
+  updateViewport() {
+    this.scrollViewportWidth = this.frameElement.nativeElement.clientWidth + 'px';
+    this.scrollViewportHeight = this.frameElement.nativeElement.clientHeight + 'px';
+  }
 }
