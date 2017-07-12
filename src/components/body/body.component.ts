@@ -1,5 +1,5 @@
 import {
-  Component, Output, EventEmitter, Input, HostBinding, ViewChild, OnInit, OnDestroy
+  Component, Output, EventEmitter, Input, HostBinding, ViewChild, OnInit, OnDestroy, ElementRef, AfterViewInit,
 } from '@angular/core';
 import { translateXY, columnsByPin, columnGroupWidths, RowHeightCache } from '../../utils';
 import { SelectionType } from '../../types';
@@ -10,75 +10,84 @@ import { MouseEvent } from '../../events';
   selector: 'datatable-body',
   template: `
 
-    <div class="datatable-scroll-frame"
-         *ngIf="rows?.length"
+    <div #frame class="datatable-scroll-frame"
          [style.position]="'absolute'"
          [style.float]="'left'"
-         [style.overflow-x]="'auto'"
+         [style.overflow-x]="scrollbarV ? 'auto' : 'hidden'"
          [style.overflow-y]="'auto'"
          [style.height]="'inherit'"
          [style.width]="'inherit'"
          [style.background]="'transparent'"
-         [style.z-index]="'999'"
-         (scroll)="scroller.onScrolled($event)">
-      <div [style.width]="columnGroupWidths.total"
+         [style.z-index]="900"
+         (scroll)="scroller.onScrolled($event)"
+         (window:resize)="resize()">
+      <div *ngIf="rows?.length"
+           [style.width]="columnGroupWidths.total"
            [style.height]="scrollHeight"
            [style.background]="'transparent'"></div>
     </div>
     
-    <datatable-selection
-      #selector
-      [selected]="selected"
-      [rows]="temp"
-      [selectCheck]="selectCheck"
-      [selectEnabled]="selectEnabled"
-      [selectionType]="selectionType"
-      [rowIdentity]="rowIdentity"
-      (select)="select.emit($event)"
-      (activate)="activate.emit($event)">
-      <datatable-progress
-        *ngIf="loadingIndicator">
-      </datatable-progress>
-      <datatable-scroller #scroller
-        *ngIf="rows?.length"
-        [scrollbarV]="scrollbarV"
-        [scrollbarH]="scrollbarH"
-        [scrollHeight]="scrollHeight"
-        [scrollWidth]="columnGroupWidths.total"
-        (scroll)="onBodyScroll($event)">
-        <datatable-row-wrapper
-          *ngFor="let row of temp; let i = index; trackBy: rowTrackingFn;"
-          [ngStyle]="getRowsStyles(row)"
-          [rowDetail]="rowDetail"
-          [detailRowHeight]="getDetailRowHeight(row,i)"
-          [row]="row"
-          [expanded]="row.$$expanded === 1"
-          (rowContextmenu)="rowContextmenu.emit($event)">
-          <datatable-body-row
-            tabindex="-1"
-            [isSelected]="selector.getRowSelected(row)"
-            [innerWidth]="innerWidth"
-            [offsetX]="offsetX"
-            [columns]="columns"
-            [rowHeight]="getRowHeight(row)"
+    <div class="datatable-scroll-contents"
+      [style.position]="'absolute'"
+      [style.height]="scrollContentHeight"
+      [style.width]="scrollContentWidth"
+      [style.z-index]="901"
+      [style.overflow]="'hidden'"
+      (wheel)="onWheel($event)">
+      <datatable-selection
+        #selector
+        [selected]="selected"
+        [rows]="temp"
+        [selectCheck]="selectCheck"
+        [selectEnabled]="selectEnabled"
+        [selectionType]="selectionType"
+        [rowIdentity]="rowIdentity"
+        (select)="select.emit($event)"
+        (activate)="activate.emit($event)">
+        <datatable-progress
+          *ngIf="loadingIndicator">
+        </datatable-progress>
+        <datatable-scroller #scroller
+          *ngIf="rows?.length"
+          [scrollbarV]="scrollbarV"
+          [scrollbarH]="scrollbarH"
+          [scrollHeight]="scrollHeight"
+          [scrollWidth]="columnGroupWidths.total"
+          (scroll)="onBodyScroll($event)">
+          <datatable-row-wrapper
+            *ngFor="let row of temp; let i = index; trackBy: rowTrackingFn;"
+            [ngStyle]="getRowsStyles(row)"
+            [rowDetail]="rowDetail"
+            [detailRowHeight]="getDetailRowHeight(row,i)"
             [row]="row"
-            [rowClass]="rowClass"
-            (activate)="selector.onActivate($event, i)">
-          </datatable-body-row>
-        </datatable-row-wrapper>
-      </datatable-scroller>
-      <div
-        class="empty-row"
-        *ngIf="!rows?.length"
-        [innerHTML]="emptyMessage">
-      </div>
-    </datatable-selection>
+            [expanded]="row.$$expanded === 1"
+            (rowContextmenu)="rowContextmenu.emit($event)">
+            <datatable-body-row
+              tabindex="-1"
+              [isSelected]="selector.getRowSelected(row)"
+              [innerWidth]="innerWidth"
+              [offsetX]="offsetX"
+              [columns]="columns"
+              [rowHeight]="getRowHeight(row)"
+              [row]="row"
+              [rowClass]="rowClass"
+              (activate)="selector.onActivate($event, i)">
+            </datatable-body-row>
+          </datatable-row-wrapper>
+        </datatable-scroller>
+        <div
+          class="empty-row"
+          *ngIf="!rows?.length"
+          [innerHTML]="emptyMessage">
+        </div>
+      </datatable-selection>
+    </div>
   `,
   host: {
     class: 'datatable-body'
   }
 })
-export class DataTableBodyComponent implements OnInit, OnDestroy {
+export class DataTableBodyComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() scrollbarV: boolean;
   @Input() scrollbarH: boolean;
@@ -169,6 +178,9 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
     return this._bodyHeight;
   }
 
+  scrollContentWidth = '100%';
+  scrollContentHeight = '100%';
+
   @Output() scroll: EventEmitter<any> = new EventEmitter();
   @Output() page: EventEmitter<any> = new EventEmitter();
   @Output() activate: EventEmitter<any> = new EventEmitter();
@@ -177,6 +189,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
   @Output() rowContextmenu = new EventEmitter<{event: MouseEvent, row: any}>(false);
 
   @ViewChild(ScrollerComponent) scroller: ScrollerComponent;
+  @ViewChild('frame') frameElement: ElementRef;
 
   /**
    * Returns if selection is enabled.
@@ -248,6 +261,11 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
           if(type === 'all') this.toggleAllRows(value);
         });
     }
+
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.updateScrollContentSize());
   }
 
   /**
@@ -605,4 +623,20 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
     this.updateRows();
   }
 
+  onWheel(event: WheelEvent) {
+    console.log(event);
+    const newEvent = new WheelEvent(event.type, { deltaX: event.deltaX, deltaY: event.deltaY, deltaZ: event.deltaZ });
+    this.frameElement.nativeElement.dispatchEvent(newEvent);
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  resize() {
+    this.updateScrollContentSize();
+  }
+
+  updateScrollContentSize() {
+    this.scrollContentHeight = this.frameElement.nativeElement.clientHeight - 15 + 'px';
+    this.scrollContentWidth = this.frameElement.nativeElement.clientWidth - 15 + 'px';
+  }
 }
