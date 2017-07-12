@@ -27,6 +27,9 @@ export class ScrollerComponent implements OnInit, OnDestroy {
 
   @Output() scroll: EventEmitter<any> = new EventEmitter();
 
+  @HostBinding('style.margin-top')
+  top: string;
+
   scrollYPos: number = 0;
   scrollXPos: number = 0;
   prevScrollYPos: number = 0;
@@ -84,6 +87,8 @@ export class ScrollerComponent implements OnInit, OnDestroy {
 
     this.prevScrollYPos = this.scrollYPos;
     this.prevScrollXPos = this.scrollXPos;
+
+    this.top = `${-this.scrollYPos}px`;
   }
 
 }
