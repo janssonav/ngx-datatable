@@ -19,8 +19,8 @@ import { MouseEvent } from '../../events';
          (scroll)="onScrolled($event)"
          (window:resize)="resize()">
       <div class="datatable-fake-scroll"
-           [style.width]="scrollWidth"
-           [style.height]="scrollHeight"
+           [style.width.px]="scrollWidth"
+           [style.height.px]="scrollHeight"
            [style.background]="'transparent'">
       </div>
     </div>
