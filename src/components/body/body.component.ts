@@ -11,7 +11,8 @@ import { MouseEvent } from '../../events';
   template: `
 
     <div class="datatable-scroll-frame"
-         [style.position]="'fixed'"
+         *ngIf="rows?.length"
+         [style.position]="'absolute'"
          [style.float]="'left'"
          [style.overflow-x]="'auto'"
          [style.overflow-y]="'auto'"
