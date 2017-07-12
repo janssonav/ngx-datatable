@@ -9,6 +9,22 @@ import { MouseEvent } from '../../events';
 @Component({
   selector: 'datatable-body',
   template: `
+
+    <div class="datatable-scroll-frame"
+         [style.position]="'fixed'"
+         [style.float]="'left'"
+         [style.overflow-x]="'auto'"
+         [style.overflow-y]="'auto'"
+         [style.height]="'inherit'"
+         [style.width]="'inherit'"
+         [style.background]="'transparent'"
+         [style.z-index]="'999'"
+         (scroll)="scroller.onScrolled($event)">
+      <div [style.width]="columnGroupWidths.total"
+           [style.height]="scrollHeight"
+           [style.background]="'transparent'"></div>
+    </div>
+    
     <datatable-selection
       #selector
       [selected]="selected"
@@ -22,7 +38,7 @@ import { MouseEvent } from '../../events';
       <datatable-progress
         *ngIf="loadingIndicator">
       </datatable-progress>
-      <datatable-scroller
+      <datatable-scroller #scroller
         *ngIf="rows?.length"
         [scrollbarV]="scrollbarV"
         [scrollbarH]="scrollbarH"
