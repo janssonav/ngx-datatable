@@ -1,5 +1,5 @@
 import {
-  Component, Output, EventEmitter, Input, HostBinding, ViewChild, OnInit, OnDestroy,
+  Component, Output, EventEmitter, Input, HostBinding, ViewChild, OnInit, OnDestroy
 } from '@angular/core';
 import { translateXY, columnsByPin, columnGroupWidths, RowHeightCache } from '../../utils';
 import { SelectionType } from '../../types';
@@ -22,15 +22,15 @@ import { MouseEvent } from '../../events';
       <datatable-progress
         *ngIf="loadingIndicator">
       </datatable-progress>
-      <datatable-scroller #scroller
+      <datatable-scroller
         *ngIf="rows?.length"
         [scrollbarV]="scrollbarV"
         [scrollbarH]="scrollbarH"
         [scrollHeight]="scrollHeight"
         [scrollWidth]="columnGroupWidths.total"
-        (scroll)="onBodyScroll($event)"
-        [style.height]="'100%'" 
-        [style.width]="'100%'">
+        [style.height]="'100%'"
+        [style.width]="bodyWidth"
+        (scroll)="onBodyScroll($event)">
         <datatable-row-wrapper
           *ngFor="let row of temp; let i = index; trackBy: rowTrackingFn;"
           [ngStyle]="getRowsStyles(row)"
@@ -233,7 +233,6 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
           if(type === 'all') this.toggleAllRows(value);
         });
     }
-
   }
 
   /**
