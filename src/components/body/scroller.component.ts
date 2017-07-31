@@ -124,8 +124,13 @@ export class ScrollerComponent implements OnInit, OnDestroy {
   }
 
   onWheel(event: WheelEvent) {
-    this.scrollYPos = Math.min(this.scrollHeight, Math.max(0, this.scrollYPos + event.deltaY));
-    this.scrollXPos = Math.min(this.scrollWidth, Math.max(0, this.scrollXPos + event.deltaX));
+    this.scrollYPos = Math.min(
+      Math.max(0, this.scrollHeight - this.frameElement.nativeElement.clientHeight),
+      Math.max(0, this.scrollYPos + event.deltaY));
+    this.scrollXPos = Math.min(
+      Math.max(0, this.scrollWidth - this.frameElement.nativeElement.clientWidth),
+      Math.max(0, this.scrollXPos + event.deltaX));
+
     this.updateOffset();
     event.preventDefault();
     event.stopPropagation();
