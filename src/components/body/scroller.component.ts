@@ -139,11 +139,11 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onWheel(event: WheelEvent) {
-    const top = this.scrollYPos + event.deltaY;
-    const left = this.scrollXPos + event.deltaX;
     event.preventDefault();
     event.stopPropagation();
-    this.scrollTo(top, left);
+    const elem = this.frameElement.nativeElement;
+    elem.scrollTop += event.deltaY;
+    elem.scrollLeft += event.deltaX;
   }
 
   resize() {
