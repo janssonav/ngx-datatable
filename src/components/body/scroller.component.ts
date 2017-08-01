@@ -103,29 +103,19 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onScrolled(event: MouseEvent): void {
-    console.log('scroll', event);
-
     const dom: Element = <Element>event.currentTarget;
     this.scrollYPos = dom.scrollTop;
     this.scrollXPos = dom.scrollLeft;
-
     requestAnimationFrame(this.updateOffset.bind(this));
   }
 
+  // Only occurs if the viewport gets automatically scrolled due to e.g. focus changes
   onViewportScrolled(event: MouseEvent): void {
     const dom: Element = <Element>event.currentTarget;
-    const top = dom.scrollTop;
-    const left = dom.scrollLeft;
-
-    if (top === 0 && left === 0) {
-      return;
-    }
-
-    this.frameElement.nativeElement.scrollTop = top;
-    this.frameElement.nativeElement.scrollLeft = left;
-
     dom.scrollTop = 0;
     dom.scrollLeft = 0;
+    // TODO: Call scrollTo with the appropriate args to sync the scroll position.
+    // Currently, scrolling is prevented.
   }
 
   updateOffset(): void {
@@ -149,24 +139,25 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onWheel(event: WheelEvent) {
-    this.scrollYPos = Math.min(
-      Math.max(0, this.scrollHeight - this.frameElement.nativeElement.clientHeight),
-      Math.max(0, this.scrollYPos + event.deltaY));
-    this.scrollXPos = Math.min(
-      Math.max(0, this.scrollWidth - this.frameElement.nativeElement.clientWidth),
-      Math.max(0, this.scrollXPos + event.deltaX));
-
-    this.updateOffset();
+    const top = this.scrollYPos + event.deltaY;
+    const left = this.scrollXPos + event.deltaX;
     event.preventDefault();
     event.stopPropagation();
+    this.scrollTo(top, left);
   }
 
   resize() {
     this.updateViewport();
   }
 
-  updateViewport() {
+  private updateViewport() {
     this.scrollViewportWidth = this.frameElement.nativeElement.clientWidth + 'px';
     this.scrollViewportHeight = this.frameElement.nativeElement.clientHeight + 'px';
+  }
+
+  private scrollTo(top: number, left: number) {
+    const elem = this.frameElement.nativeElement;
+    elem.scrollTop = top;
+    elem.scrollLeft = left;
   }
 }
