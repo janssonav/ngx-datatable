@@ -1,9 +1,7 @@
 import {
   Component, Input, ElementRef, Output, EventEmitter, Renderer,
-  OnInit, OnDestroy, HostBinding, ViewChild
+  OnInit, OnDestroy, ViewChild, OnChanges,
 } from '@angular/core';
-
-import { MouseEvent } from '../../events';
 
 @Component({
   selector: 'datatable-scroller',
@@ -16,7 +14,6 @@ import { MouseEvent } from '../../events';
          [style.height]="'100%'"
          [style.width]="'100%'"
          [style.background]="'transparent'"
-         (scroll)="onScrolled($event)"
          (window:resize)="resize()">
       <div class="datatable-fake-scroll"
            [style.width.px]="scrollWidth"
@@ -24,12 +21,11 @@ import { MouseEvent } from '../../events';
            [style.background]="'transparent'">
       </div>
     </div>
-    <div class="datatable-scroll-viewport"
+    <div #viewport  class="datatable-scroll-viewport"
          [style.position]="'absolute'"
          [style.height]="scrollViewportHeight"
          [style.width]="scrollViewportWidth"
-         [style.overflow]="'hidden'"
-         (wheel)="onWheel($event)">
+         [style.overflow]="'hidden'">
       <div class="datatable-scroll"
         [style.height.px]="scrollHeight"
         [style.width.px]="scrollWidth"
@@ -42,7 +38,7 @@ import { MouseEvent } from '../../events';
     class: 'datatable-scroll'
   }
 })
-export class ScrollerComponent implements OnInit, OnDestroy {
+export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input() scrollbarV: boolean = false;
   @Input() scrollbarH: boolean = false;
@@ -55,6 +51,7 @@ export class ScrollerComponent implements OnInit, OnDestroy {
   top: string;
 
   @ViewChild('frame') frameElement: ElementRef;
+  @ViewChild('viewport') viewportElement: ElementRef;
 
   scrollYPos: number = 0;
   scrollXPos: number = 0;
@@ -71,16 +68,26 @@ export class ScrollerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+
     // manual bind so we don't always listen
     if(this.scrollbarV || this.scrollbarH) {
-      this.parentElement = this.element.parentElement.parentElement;
-      this.onScrollListener = this.renderer.listen(
-        this.parentElement, 'scroll', this.onScrolled.bind(this));
+      const listeners = [
+        this.renderer.listen(this.frameElement.nativeElement, 'scroll', this.onScrolled.bind(this)),
+        this.renderer.listen(this.viewportElement.nativeElement, 'scroll', this.onViewportScrolled.bind(this)),
+      ];
+      if (this.scrollbarV) {
+        listeners.push(this.renderer.listen(this.viewportElement.nativeElement, 'wheel', this.onWheel.bind(this)));
+      }
+      this.onScrollListener = () => listeners.forEach(l => l());
     }
   }
 
   ngAfterViewInit(): void {
     requestAnimationFrame(() => this.updateViewport());
+  }
+
+  ngOnChanges(): void {
+    this.updateViewport();
   }
 
   ngOnDestroy(): void {
@@ -96,11 +103,29 @@ export class ScrollerComponent implements OnInit, OnDestroy {
   }
 
   onScrolled(event: MouseEvent): void {
+    console.log('scroll', event);
+
     const dom: Element = <Element>event.currentTarget;
     this.scrollYPos = dom.scrollTop;
     this.scrollXPos = dom.scrollLeft;
 
     requestAnimationFrame(this.updateOffset.bind(this));
+  }
+
+  onViewportScrolled(event: MouseEvent): void {
+    const dom: Element = <Element>event.currentTarget;
+    const top = dom.scrollTop;
+    const left = dom.scrollLeft;
+
+    if (top === 0 && left === 0) {
+      return;
+    }
+
+    this.frameElement.nativeElement.scrollTop = top;
+    this.frameElement.nativeElement.scrollLeft = left;
+
+    dom.scrollTop = 0;
+    dom.scrollLeft = 0;
   }
 
   updateOffset(): void {
