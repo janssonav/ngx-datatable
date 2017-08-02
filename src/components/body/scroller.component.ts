@@ -25,7 +25,8 @@ import {
          [style.position]="'absolute'"
          [style.height]="scrollViewportHeight"
          [style.width]="scrollViewportWidth"
-         [style.overflow]="'hidden'">
+         [style.overflow]="'hidden'"
+         [style.pointer-events]="pointerEvents">
       <div class="datatable-scroll"
         [style.height.px]="scrollHeight"
         [style.width.px]="scrollWidth"
@@ -62,6 +63,8 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   onScrollListener: any;
   scrollViewportWidth: string;
   scrollViewportHeight: string;
+  pointerEvents: string = 'auto';
+  pointerCounter = 0;
 
   constructor(element: ElementRef, private renderer: Renderer) {
     this.element = element.nativeElement;
@@ -107,6 +110,7 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
     this.scrollYPos = dom.scrollTop;
     this.scrollXPos = dom.scrollLeft;
     requestAnimationFrame(this.updateOffset.bind(this));
+    this.resetPointerEvents();
   }
 
   // Only occurs if the viewport gets automatically scrolled due to e.g. focus changes
@@ -139,11 +143,25 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onWheel(event: WheelEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    const elem = this.frameElement.nativeElement;
-    elem.scrollTop += event.deltaY;
-    elem.scrollLeft += event.deltaX;
+    if (this.pointerEvents === 'auto') {
+      this.frameElement.nativeElement.scrollTop += event.deltaY;
+      this.frameElement.nativeElement.scrollLeft += event.deltaX;
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+
+  resetPointerEvents() {
+    this.pointerEvents = 'none';
+    this.pointerCounter++;
+    const ctr = this.pointerCounter;
+    setTimeout(() => this.restorePointerEvents(ctr), 500);
+  }
+
+  restorePointerEvents(counter) {
+    if (this.pointerCounter === counter) {
+      this.pointerEvents = 'auto';
+    }
   }
 
   resize() {
