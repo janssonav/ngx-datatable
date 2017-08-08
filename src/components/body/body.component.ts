@@ -28,6 +28,8 @@ import { mouseEvent } from '../../events';
         [scrollbarH]="scrollbarH"
         [scrollHeight]="scrollHeight"
         [scrollWidth]="columnGroupWidths.total"
+        [style.height]="'100%'"
+        [style.width]="bodyWidth"
         (scroll)="onBodyScroll($event)">
         <datatable-row-wrapper
           *ngFor="let row of temp; let i = index; trackBy: rowTrackingFn;"
