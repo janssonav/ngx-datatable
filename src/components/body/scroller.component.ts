@@ -1,9 +1,7 @@
 import {
   Component, Input, ElementRef, Output, EventEmitter, Renderer,
-  OnInit, OnDestroy, OnChanges, HostBinding, ChangeDetectionStrategy
+  OnInit, OnDestroy, OnChanges, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef
 } from '@angular/core';
-
-import { mouseEvent } from '../../events';
 
 @Component({
   selector: 'datatable-scroller',
@@ -69,7 +67,7 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   pointerEvents: string = 'auto';
   pointerCounter = 0;
 
-  constructor(element: ElementRef, private renderer: Renderer) {
+  constructor(element: ElementRef, private renderer: Renderer, private cdr: ChangeDetectorRef) {
     this.element = element.nativeElement;
   }
 
@@ -92,7 +90,7 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(): void {
-    this.updateViewport();
+    requestAnimationFrame(() => this.updateViewport());
   }
 
   ngOnDestroy(): void {
@@ -164,6 +162,7 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   restorePointerEvents(counter) {
     if (this.pointerCounter === counter) {
       this.pointerEvents = 'auto';
+      this.cdr.markForCheck();
     }
   }
 
@@ -174,6 +173,7 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   private updateViewport() {
     this.scrollViewportWidth = this.frameElement.nativeElement.clientWidth + 'px';
     this.scrollViewportHeight = this.frameElement.nativeElement.clientHeight + 'px';
+    this.cdr.markForCheck();
   }
 
   private scrollTo(top: number, left: number) {
