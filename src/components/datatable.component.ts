@@ -762,6 +762,7 @@ export class DatatableComponent implements OnInit, AfterViewInit, DoCheck {
    * @memberOf DatatableComponent
    */
   recalculate(): void {
+    this.bodyComponent.recalcLayout();
     this.recalculateDims();
     this.recalculateColumns();
   }

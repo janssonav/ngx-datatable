@@ -3,8 +3,6 @@ import {
   OnInit, OnDestroy, ViewChild, OnChanges,
 } from '@angular/core';
 
-import { mouseEvent } from '../../events';
-
 @Component({
   selector: 'datatable-scroller',
   template: `
@@ -16,7 +14,7 @@ import { mouseEvent } from '../../events';
          [style.height]="'100%'"
          [style.width]="'100%'"
          [style.background]="'transparent'"
-         (window:resize)="resize()">
+         (window:resize)="recalculate()">
       <div class="datatable-fake-scroll"
            [style.width.px]="scrollWidth"
            [style.height.px]="scrollHeight"
@@ -87,11 +85,11 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    requestAnimationFrame(() => this.updateViewport());
+    requestAnimationFrame(() => this.recalculate());
   }
 
   ngOnChanges(): void {
-    this.updateViewport();
+    this.recalculate();
   }
 
   ngOnDestroy(): void {
@@ -166,11 +164,7 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  resize() {
-    this.updateViewport();
-  }
-
-  private updateViewport() {
+  recalculate() {
     this.scrollViewportWidth = this.frameElement.nativeElement.clientWidth + 'px';
     this.scrollViewportHeight = this.frameElement.nativeElement.clientHeight + 'px';
   }

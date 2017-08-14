@@ -604,6 +604,9 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
    * @memberOf DataTableBodyComponent
    */
   recalcLayout(): void {
+    if (this.scroller) {
+      this.scroller.recalculate();
+    }
     this.refreshRowHeightCache();
     this.updateIndexes();
     this.updateRows();
