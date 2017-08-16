@@ -22,8 +22,7 @@ import { mouseEvent } from '../../events';
       <datatable-progress
         *ngIf="loadingIndicator">
       </datatable-progress>
-      <datatable-scroller
-        *ngIf="rows?.length"
+      <datatable-scroller *ngIf="rows?.length && (scrollbarV || scrollbarH)"
         [scrollbarV]="scrollbarV"
         [scrollbarH]="scrollbarH"
         [scrollHeight]="scrollHeight"
@@ -53,6 +52,33 @@ import { mouseEvent } from '../../events';
           </datatable-body-row>
         </datatable-row-wrapper>
       </datatable-scroller>
+
+      <div class="scroller" *ngIf="!(scrollbarV || scrollbarH)">
+        <datatable-row-wrapper
+          *ngFor="let row of temp; let i = index; trackBy: rowTrackingFn;"
+          [ngStyle]="getRowsStyles(row)"
+          [rowDetail]="rowDetail"
+          [detailRowHeight]="getDetailRowHeight(row,i)"
+          [row]="row"
+          [rowIndex]="getRowIndex(row)"
+          [expanded]="getRowExpanded(row)"
+          (rowContextmenu)="rowContextmenu.emit($event)">
+          <datatable-body-row
+            tabindex="-1"
+            [isSelected]="selector.getRowSelected(row)"
+            [innerWidth]="innerWidth"
+            [offsetX]="offsetX"
+            [columns]="columns"
+            [rowHeight]="getRowHeight(row)"
+            [row]="row"
+            [rowIndex]="getRowIndex(row)"
+            [expanded]="getRowExpanded(row)"
+            [rowClass]="rowClass"
+            (activate)="selector.onActivate($event, i)">
+          </datatable-body-row>
+        </datatable-row-wrapper>
+      </div>
+      
       <div
         class="empty-row"
         *ngIf="!rows?.length"
