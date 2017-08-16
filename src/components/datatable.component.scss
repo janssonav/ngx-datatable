@@ -175,8 +175,20 @@
     z-index: 10;
     display: block;
 
-    .datatable-scroll{
-      display: inline-block;
+    datatable-scroller {
+      .datatable-scroll-frame {
+        position: absolute;
+        float: left;
+        background: transparent;
+        overflow: auto;
+        height: 100%;
+        width: 100%;
+      }
+
+      .datatable-scroll-viewport {
+        position: absolute;
+        overflow: hidden;
+      }
     }
 
     .datatable-row-detail {

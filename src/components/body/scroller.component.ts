@@ -5,32 +5,22 @@ import {
 
 @Component({
   selector: 'datatable-scroller',
-  template: `
+  template: `    
     <div #frame class="datatable-scroll-frame"
-         [style.position]="'absolute'"
-         [style.float]="'left'"
-         [style.overflow-x]="scrollbarV ? 'auto' : 'hidden'"
-         [style.overflow-y]="scrollbarV ? 'auto' : 'hidden'"
-         [style.height]="'100%'"
-         [style.width]="'100%'"
-         [style.background]="'transparent'"
          (window:resize)="resize()">
       <div class="datatable-fake-scroll"
            [style.width.px]="scrollWidth"
-           [style.height.px]="scrollHeight"
-           [style.background]="'transparent'">
+           [style.height.px]="scrollHeight">
       </div>
     </div>
-    <div #viewport  class="datatable-scroll-viewport"
-         [style.position]="'absolute'"
-         [style.height]="scrollViewportHeight"
-         [style.width]="scrollViewportWidth"
-         [style.overflow]="'hidden'"
+    <div #viewport class="datatable-scroll-viewport"
+         [style.height.px]="scrollViewportHeight"
+         [style.width.px]="scrollViewportWidth"
          [style.pointer-events]="pointerEvents">
       <div class="datatable-scroll"
-        [style.height.px]="scrollHeight"
-        [style.width.px]="scrollWidth"
-        [style.margin-top]="top">
+           [style.height.px]="scrollHeight"
+           [style.width.px]="scrollWidth"
+           [style.margin-top.px]="top">
         <ng-content></ng-content>
       </div>
     </div>
@@ -50,7 +40,7 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
 
   @Output() scroll: EventEmitter<any> = new EventEmitter();
 
-  top: string;
+  top: number;
 
   @ViewChild('frame') frameElement: ElementRef;
   @ViewChild('viewport') viewportElement: ElementRef;
@@ -62,8 +52,8 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   element: any;
   parentElement: any;
   onScrollListener: any;
-  scrollViewportWidth: string;
-  scrollViewportHeight: string;
+  scrollViewportWidth: number;
+  scrollViewportHeight: number;
   pointerEvents: string = 'auto';
   pointerCounter = 0;
 
@@ -140,7 +130,7 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
     this.prevScrollYPos = this.scrollYPos;
     this.prevScrollXPos = this.scrollXPos;
 
-    this.top = `${-this.scrollYPos}px`;
+    this.top = -this.scrollYPos;
   }
 
   onWheel(event: WheelEvent) {
@@ -171,14 +161,18 @@ export class ScrollerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private updateViewport() {
-    this.scrollViewportWidth = this.frameElement.nativeElement.clientWidth + 'px';
-    this.scrollViewportHeight = this.frameElement.nativeElement.clientHeight + 'px';
-    this.cdr.markForCheck();
+    if (this.scrollbarV || this.scrollbarH) {
+      this.scrollViewportWidth = this.frameElement.nativeElement.clientWidth;
+      this.scrollViewportHeight = this.frameElement.nativeElement.clientHeight;
+      this.cdr.markForCheck();
+    }
   }
 
   private scrollTo(top: number, left: number) {
-    const elem = this.frameElement.nativeElement;
-    elem.scrollTop = top;
-    elem.scrollLeft = left;
+    if (this.scrollbarV || this.scrollbarH) {
+      const elem = this.frameElement.nativeElement;
+      elem.scrollTop = top;
+      elem.scrollLeft = left;
+    }
   }
 }
